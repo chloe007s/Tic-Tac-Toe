@@ -1,0 +1,66 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$room": {
+        ".read": "$room.matches(/^[A-Z0-9]{6}$/)",
+        ".write": "$room.matches(/^[A-Z0-9]{6}$/)",
+        ".validate": "newData.hasChildren(['board', 'turn', 'winner', 'players', 'createdAt'])",
+        "board": {
+          ".validate": "newData.hasChildren(['0', '1', '2', '3', '4', '5', '6', '7', '8'])",
+          "$cell": {
+            ".validate": "$cell.matches(/^[0-8]$/) && newData.isString() && (newData.val() == '' || newData.val() == 'X' || newData.val() == 'O')"
+          }
+        },
+        "players": {
+          ".validate": "newData.hasChild('X')",
+          "X": {
+            ".validate": "newData.hasChildren(['name', 'uid'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 16"
+            },
+            "uid": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "O": {
+            ".validate": "newData.hasChildren(['name', 'uid'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 16"
+            },
+            "uid": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "turn": {
+          ".validate": "newData.isString() && (newData.val() == 'X' || newData.val() == 'O')"
+        },
+        "winner": {
+          ".validate": "newData.isString() && (newData.val() == '' || newData.val() == 'X' || newData.val() == 'O' || newData.val() == 'draw')"
+        },
+        "winLine": {
+          "$i": {
+            ".validate": "$i.matches(/^[0-2]$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 8"
+          }
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}
