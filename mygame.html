@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mygame</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18202f;
+      --muted: #627084;
+      --line: #d9e0ea;
+      --panel: #ffffff;
+      --bg: #f5f7fb;
+      --blue: #2364d2;
+      --green: #12805c;
+      --red: #c93544;
+      --gold: #b57900;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(120deg, rgba(35,100,210,.08), transparent 38%),
+        linear-gradient(290deg, rgba(18,128,92,.1), transparent 42%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    main {
+      width: min(920px, 100%);
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    section, aside {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 35px rgba(24,32,47,.08);
+    }
+
+    aside {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 11px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(35,100,210,.12);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 11px 12px;
+      font: inherit;
+      font-weight: 800;
+      color: #fff;
+      background: var(--blue);
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--ink);
+      background: #e8edf5;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    .game {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .status {
+      min-height: 78px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      background: #fbfcff;
+    }
+
+    .names {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .player {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .player strong,
+    .player span {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .player strong { font-size: 14px; }
+    .player span { color: var(--muted); font-size: 13px; margin-top: 3px; }
+
+    .player.turn {
+      border-color: var(--green);
+      box-shadow: inset 0 0 0 2px rgba(18,128,92,.12);
+    }
+
+    .board {
+      width: min(420px, 100%);
+      aspect-ratio: 1;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--blue);
+      font-size: clamp(42px, 12vw, 76px);
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 5px 12px rgba(24,32,47,.06);
+    }
+
+    .cell.o { color: var(--green); }
+    .cell.win { border-color: var(--gold); background: #fff8df; }
+
+    .winner {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(10,18,30,.52);
+    }
+
+    .winner.show { display: grid; }
+
+    .winner-box {
+      width: min(420px, 100%);
+      border-radius: 8px;
+      padding: 28px;
+      text-align: center;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(0,0,0,.22);
+    }
+
+    .winner-box h2 {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    code {
+      border-radius: 5px;
+      background: #eef2f7;
+      padding: 2px 6px;
+      color: var(--ink);
+    }
+
+    .small { font-size: 13px; }
+    .danger { color: var(--red); }
+
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; }
+      .actions, .names { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <aside>
+      <h1>mygame</h1>
+      <p>A tiny 2-player Firebase tic-tac-toe game.</p>
+
+      <label>
+        Your name
+        <input id="nameInput" maxlength="16" placeholder="Player name">
+      </label>
+
+      <label>
+        Room code
+        <input id="roomInput" maxlength="20" placeholder="Leave empty to create">
+      </label>
+
+      <div class="actions">
+        <button id="createBtn">Create</button>
+        <button id="joinBtn" class="secondary">Join</button>
+      </div>
+
+      <button id="resetBtn" class="secondary" disabled>Restart</button>
+      <p id="help" class="small">Add your Firebase Realtime Database values to <code>firebaseConfig</code>, then deploy this file to Vercel.</p>
+    </aside>
+
+    <section class="game">
+      <div class="status">
+        <h2 id="title">Create or join a room</h2>
+        <p id="message">The game starts when exactly 2 players have joined.</p>
+      </div>
+
+      <div class="names">
+        <div id="playerX" class="player"><strong>X</strong><span>Waiting</span></div>
+        <div id="playerO" class="player"><strong>O</strong><span>Waiting</span></div>
+      </div>
+
+      <div id="board" class="board" aria-label="Tic-tac-toe board"></div>
+    </section>
+  </main>
+
+  <div id="winnerModal" class="winner" role="dialog" aria-modal="true">
+    <div class="winner-box">
+      <h2 id="winnerTitle">Winner!</h2>
+      <p id="winnerText">Congratulations.</p>
+      <button id="closeWinner" class="secondary">Keep playing</button>
+    </div>
+  </div>
+  <canvas id="confetti"></canvas>
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      appId: "YOUR_APP_ID"
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const boardEl = $("board");
+    const titleEl = $("title");
+    const messageEl = $("message");
+    const roomInput = $("roomInput");
+    const nameInput = $("nameInput");
+    const resetBtn = $("resetBtn");
+    const winnerModal = $("winnerModal");
+    const winnerTitle = $("winnerTitle");
+    const winnerText = $("winnerText");
+    const closeWinner = $("closeWinner");
+    const canvas = $("confetti");
+    const ctx = canvas.getContext("2d");
+    const wins = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+
+    let roomCode = "";
+    let myMark = "";
+    let unsub = null;
+    let latestRoom = null;
+    let confettiTimer = 0;
+    let pieces = [];
+    let db = null;
+    let firebaseApi = null;
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      cell.type = "button";
+      cell.setAttribute("aria-label", `Cell ${i + 1}`);
+      cell.addEventListener("click", () => play(i));
+      boardEl.appendChild(cell);
+    }
+
+    $("createBtn").addEventListener("click", createRoom);
+    $("joinBtn").addEventListener("click", joinRoom);
+    resetBtn.addEventListener("click", resetGame);
+    closeWinner.addEventListener("click", () => winnerModal.classList.remove("show"));
+    addEventListener("resize", sizeCanvas);
+    sizeCanvas();
+
+    function cleanName() {
+      return nameInput.value.trim().slice(0, 16) || "Player";
+    }
+
+    function makeCode() {
+      return Math.random().toString(36).slice(2, 8).toUpperCase();
+    }
+
+    function emptyBoard() {
+      return Array(9).fill("");
+    }
+
+    async function createRoom() {
+      if (!await ensureFirebase()) return;
+      roomCode = makeCode();
+      myMark = "X";
+      const room = {
+        board: emptyBoard(),
+        turn: "X",
+        winner: "",
+        winLine: [],
+        players: { X: cleanName(), O: "" },
+        createdAt: Date.now()
+      };
+      await firebaseApi.set(firebaseApi.ref(db, `rooms/${roomCode}`), room);
+      roomInput.value = roomCode;
+      watchRoom();
+    }
+
+    async function joinRoom() {
+      if (!await ensureFirebase()) return;
+      const code = roomInput.value.trim().toUpperCase();
+      if (!code) return setInfo("Room code required", "Enter the room code from your friend.", true);
+
+      const roomRef = firebaseApi.ref(db, `rooms/${code}`);
+      const snap = await firebaseApi.get(roomRef);
+      if (!snap.exists()) return setInfo("Room not found", "Check the room code and try again.", true);
+
+      const room = snap.val();
+      const nextMark = !room.players?.X ? "X" : !room.players?.O ? "O" : "";
+      if (!nextMark) return setInfo("Room is full", "This game allows exactly 2 players.", true);
+
+      roomCode = code;
+      myMark = nextMark;
+      await firebaseApi.update(roomRef, { [`players/${nextMark}`]: cleanName() });
+      watchRoom();
+    }
+
+    function watchRoom() {
+      if (unsub) unsub();
+      resetBtn.disabled = false;
+      unsub = firebaseApi.onValue(firebaseApi.ref(db, `rooms/${roomCode}`), (snap) => {
+        latestRoom = snap.val();
+        render();
+      });
+    }
+
+    async function play(index) {
+      if (!roomCode || !myMark || !latestRoom) return;
+      if (latestRoom.winner || latestRoom.turn !== myMark || latestRoom.board[index]) return;
+      if (!latestRoom.players?.X || !latestRoom.players?.O) return;
+
+      await firebaseApi.runTransaction(firebaseApi.ref(db, `rooms/${roomCode}`), (room) => {
+        if (!room || room.winner || room.turn !== myMark || room.board[index]) return room;
+        room.board[index] = myMark;
+        const result = getResult(room.board);
+        room.winner = result.winner;
+        room.winLine = result.line;
+        room.turn = myMark === "X" ? "O" : "X";
+        return room;
+      });
+    }
+
+    async function resetGame() {
+      if (!roomCode) return;
+      await firebaseApi.update(firebaseApi.ref(db, `rooms/${roomCode}`), {
+        board: emptyBoard(),
+        turn: "X",
+        winner: "",
+        winLine: []
+      });
+      winnerModal.classList.remove("show");
+    }
+
+    function getResult(board) {
+      for (const line of wins) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return { winner: board[a], line };
+        }
+      }
+      if (board.every(Boolean)) return { winner: "draw", line: [] };
+      return { winner: "", line: [] };
+    }
+
+    async function ensureFirebase() {
+      if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+        setInfo("Firebase setup needed", "Replace firebaseConfig values before creating or joining a room.", true);
+        return false;
+      }
+
+      if (db && firebaseApi) return true;
+
+      try {
+        const appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+        const dbModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
+        const app = appModule.initializeApp(firebaseConfig);
+        db = dbModule.getDatabase(app);
+        firebaseApi = dbModule;
+        return true;
+      } catch (error) {
+        setInfo("Firebase load failed", "Check your network and Firebase configuration.", true);
+        return false;
+      }
+    }
+
+    function render() {
+      if (!latestRoom) return;
+      const players = latestRoom.players || {};
+      const roomLabel = roomCode ? `Room code: ${roomCode}` : "No room";
+      const waiting = !players.X || !players.O;
+      const currentName = players[latestRoom.turn] || latestRoom.turn;
+
+      $("playerX").classList.toggle("turn", latestRoom.turn === "X" && !latestRoom.winner);
+      $("playerO").classList.toggle("turn", latestRoom.turn === "O" && !latestRoom.winner);
+      $("playerX").querySelector("span").textContent = players.X || "Waiting";
+      $("playerO").querySelector("span").textContent = players.O || "Waiting";
+
+      if (waiting) {
+        setInfo(roomLabel, "Waiting for the second player.");
+      } else if (latestRoom.winner === "draw") {
+        setInfo("Draw", "Use Restart for one more round.");
+      } else if (latestRoom.winner) {
+        const winnerName = players[latestRoom.winner] || latestRoom.winner;
+        setInfo(`${winnerName} wins!`, "Congratulations! Great round.");
+        showWinner(winnerName);
+      } else {
+        setInfo(roomLabel, `${currentName} (${latestRoom.turn}) is up.`);
+      }
+
+      [...boardEl.children].forEach((cell, i) => {
+        const mark = latestRoom.board?.[i] || "";
+        cell.textContent = mark;
+        cell.disabled = waiting || !!latestRoom.winner || latestRoom.turn !== myMark || !!mark;
+        cell.classList.toggle("o", mark === "O");
+        cell.classList.toggle("win", latestRoom.winLine?.includes(i));
+      });
+    }
+
+    function setInfo(title, message, danger = false) {
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      messageEl.className = danger ? "danger" : "";
+    }
+
+    function showWinner(name) {
+      if (winnerModal.classList.contains("show")) return;
+      winnerTitle.textContent = `${name} wins!`;
+      winnerText.textContent = "Congratulations. Time for fireworks!";
+      winnerModal.classList.add("show");
+      fireConfetti();
+    }
+
+    function sizeCanvas() {
+      canvas.width = innerWidth * devicePixelRatio;
+      canvas.height = innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    }
+
+    function fireConfetti() {
+      pieces = Array.from({ length: 130 }, () => ({
+        x: innerWidth / 2,
+        y: innerHeight * .28,
+        vx: (Math.random() - .5) * 9,
+        vy: Math.random() * -7 - 3,
+        size: Math.random() * 7 + 4,
+        spin: Math.random() * 6,
+        color: ["#2364d2", "#12805c", "#f2b705", "#c93544", "#6f4cc3"][Math.floor(Math.random() * 5)]
+      }));
+      cancelAnimationFrame(confettiTimer);
+      animateConfetti();
+      setTimeout(() => {
+        pieces = [];
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+      }, 2600);
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      pieces.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += .18;
+        p.spin += .16;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.spin);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .62);
+        ctx.restore();
+      });
+      pieces = pieces.filter((p) => p.y < innerHeight + 40);
+      if (pieces.length) confettiTimer = requestAnimationFrame(animateConfetti);
+    }
+  </script>
+</body>
+</html>
