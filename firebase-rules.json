@@ -1,0 +1,42 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$room": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.child('players/X/uid').val() == auth.uid && !newData.child('players/O').exists()) || (data.exists() && (data.child('players/X/uid').val() == auth.uid || data.child('players/O/uid').val() == auth.uid || (!data.child('players/O').exists() && newData.child('players/O/uid').val() == auth.uid))))",
+        ".validate": "$room.matches(/^[A-Z0-9]{6}$/) && newData.hasChildren(['board', 'turn', 'winner', 'players', 'createdAt']) && newData.child('turn').isString() && (newData.child('turn').val() == 'X' || newData.child('turn').val() == 'O') && newData.child('winner').isString() && (newData.child('winner').val() == '' || newData.child('winner').val() == 'X' || newData.child('winner').val() == 'O' || newData.child('winner').val() == 'draw')",
+        "board": {
+          ".validate": "newData.hasChildren(['0', '1', '2', '3', '4', '5', '6', '7', '8'])",
+          "$cell": {
+            ".validate": "$cell.matches(/^[0-8]$/) && newData.isString() && (newData.val() == '' || newData.val() == 'X' || newData.val() == 'O')"
+          }
+        },
+        "players": {
+          ".validate": "newData.hasChild('X')",
+          "X": {
+            ".validate": "newData.hasChildren(['name', 'uid'])",
+            "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 16" },
+            "uid": { ".validate": "newData.isString() && newData.val().length > 0" },
+            "$other": { ".validate": false }
+          },
+          "O": {
+            ".validate": "newData.hasChildren(['name', 'uid'])",
+            "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 16" },
+            "uid": { ".validate": "newData.isString() && newData.val().length > 0" },
+            "$other": { ".validate": false }
+          },
+          "$other": { ".validate": false }
+        },
+        "turn": { ".validate": "newData.isString() && (newData.val() == 'X' || newData.val() == 'O')" },
+        "winner": { ".validate": "newData.isString() && (newData.val() == '' || newData.val() == 'X' || newData.val() == 'O' || newData.val() == 'draw')" },
+        "winLine": {
+          "$i": { ".validate": "$i.matches(/^[0-2]$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 8" }
+        },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
